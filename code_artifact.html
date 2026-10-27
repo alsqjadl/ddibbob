@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>온라인 메이드카페 띠띠 ♡ 추억의 문방구 뽑기</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti for winning animations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        maidPurple: '#A78BFA',
+                        maidDarkPurple: '#7C3AED',
+                        maidDeepPurple: '#4C1D95',
+                        maidSoftPurple: '#F3E8FF',
+                        maidLace: '#FAF5FF',
+                        maidBlack: '#1E1B4B',
+                        maidGold: '#FBBF24',
+                        maidAccent: '#EC4899',
+                    },
+                    fontFamily: {
+                        jua: ['Jua', 'sans-serif'],
+                        gowun: ['Gowun Dodum', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(270,80%,20%,1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(300,70%,25%,1) 0px, transparent 50%),
+                radial-gradient(#c084fc 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px;
+            user-select: none;
+        }
+
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+
+        /* Paper Tear Effect Styling */
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        @media (min-width: 640px) {
+            .board-grid {
+                grid-template-columns: repeat(10, 1fr);
+                gap: 10px;
+            }
+        }
+
+        .pull-ticket {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .ticket-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+
+        .ticket-front, .ticket-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
+        .ticket-front {
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            border: 2px solid #e9d5ff;
+            color: white;
+        }
+
+        .ticket-front::after {
+            content: '♡';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 10px;
+            opacity: 0.6;
+            color: #ffffff;
+        }
+
+        .ticket-opened .ticket-inner {
+            transform: rotateY(180deg);
+        }
+
+        .ticket-back {
+            background-color: #ffffff;
+            transform: rotateY(180deg);
+            border: 2px solid #7c3aed;
+        }
+
+        /* Speech Bubble Tail */
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 30px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #ffffff transparent;
+            display: block;
+            width: 0;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(192, 132, 252, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 text-maidBlack">
+
+    <!-- Header / Banner -->
+    <header class="w-full max-w-3xl glass-card rounded-3xl p-4 shadow-2xl mb-4 relative overflow-hidden border-2 border-purple-300">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-purple-600 to-pink-500 text-white p-3.5 rounded-2xl shadow-lg animate-pulse">
+                    <i class="fa-solid fa-sparkles text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="title-font text-2xl sm:text-3xl text-purple-900 tracking-wide flex items-center gap-2">
+                        온라인 메이드카페 띠띠 <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-sans font-bold">@maiddiddi</span>
+                    </h1>
+                    <p class="text-xs sm:text-sm text-purple-700 font-medium">주인님 ♡ 띠띠의 신비로운 퍼플 종이 뽑기 판이에요!</p>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                <div class="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold px-3 py-1.5 rounded-2xl text-xs sm:text-sm shadow-md title-font flex items-center gap-1">
+                    <i class="fa-solid fa-coins text-yellow-300"></i> 1회 5,000원
+                </div>
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="bg-purple-100 text-purple-800 p-2.5 rounded-2xl border border-purple-300 hover:bg-purple-200 transition-all text-sm flex items-center gap-1.5 font-bold shadow-sm">
+                    <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+                    <span class="hidden sm:inline" id="soundText">효과음 On</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-3xl flex flex-col gap-4">
+
+        <!-- Maid Character & Dialogue Section -->
+        <section class="glass-card rounded-3xl p-4 shadow-xl flex flex-col sm:flex-row items-center gap-4 relative">
+            <!-- Maid Avatar SVG (Redesigned Anime Maid Style) -->
+            <div class="relative shrink-0">
+                <div class="w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-b from-purple-100 to-purple-200 rounded-full border-4 border-purple-400 flex items-center justify-center overflow-hidden shadow-md">
+                    <!-- Anime Styled Maid SVG -->
+                    <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-md">
+                        <!-- Hair Back Twin Tails -->
+                        <path d="M 25 50 Q 10 75 15 105 Q 30 100 35 75 Z" fill="#6B21A8"/>
+                        <path d="M 95 50 Q 110 75 105 105 Q 90 100 85 75 Z" fill="#6B21A8"/>
+                        <!-- Ribbon Bows Left/Right -->
+                        <path d="M 22 52 Q 15 45 28 42 Q 26 55 22 52 Z" fill="#EC4899"/>
+                        <path d="M 98 52 Q 105 45 92 42 Q 94 55 98 52 Z" fill="#EC4899"/>
+                        
+                        <!-- Neck & Face -->
+                        <path d="M 54 80 L 66 80 L 64 88 L 56 88 Z" fill="#FED7AA"/>
+                        <circle cx="60" cy="58" r="28" fill="#FFEDD5"/>
+                        
+                        <!-- Eyes (Anime Sparkle Eyes) -->
+                        <!-- Left Eye -->
+                        <ellipse cx="48" cy="56" rx="5.5" ry="8" fill="#581C87"/>
+                        <ellipse cx="48" cy="58" rx="3.5" ry="5" fill="#A855F7"/>
+                        <circle cx="46" cy="52" r="2" fill="#FFFFFF"/>
+                        <circle cx="50" cy="60" r="1" fill="#FFFFFF"/>
+                        <!-- Right Eye -->
+                        <ellipse cx="72" cy="56" rx="5.5" ry="8" fill="#581C87"/>
+                        <ellipse cx="72" cy="58" rx="3.5" ry="5" fill="#A855F7"/>
+                        <circle cx="70" cy="52" r="2" fill="#FFFFFF"/>
+                        <circle cx="74" cy="60" r="1" fill="#FFFFFF"/>
+
+                        <!-- Eyelashes & Brows -->
+                        <path d="M 41 47 Q 48 43 55 48" stroke="#3B0764" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M 65 48 Q 72 43 79 47" stroke="#3B0764" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        
+                        <!-- Blushing Cheeks -->
+                        <ellipse cx="44" cy="64" rx="4" ry="2" fill="#F43F5E" opacity="0.45"/>
+                        <ellipse cx="76" cy="64" rx="4" ry="2" fill="#F43F5E" opacity="0.45"/>
+                        
+                        <!-- Cute Mouth -->
+                        <path d="M 56 66 Q 60 70 64 66" stroke="#E11D48" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+                        <!-- Front Bangs Hair -->
+                        <path d="M 32 48 Q 42 32 60 38 Q 78 32 88 48 Q 76 38 60 45 Q 44 38 32 48 Z" fill="#7E22CE"/>
+
+                        <!-- Maid Headdress (Lace Headband) -->
+                        <path d="M 30 36 C 35 22, 85 22, 90 36 C 82 28, 38 28, 30 36 Z" fill="#FFFFFF"/>
+                        <path d="M 32 37 Q 60 26 88 37" stroke="#C084FC" stroke-width="2" fill="none" stroke-dasharray="2 2"/>
+                        <!-- Small Lace Flowers -->
+                        <circle cx="32" cy="37" r="3" fill="#F472B6"/>
+                        <circle cx="88" cy="37" r="3" fill="#F472B6"/>
+
+                        <!-- Maid Dress & Collar -->
+                        <path d="M 36 90 L 60 102 L 84 90 L 96 120 L 24 120 Z" fill="#312E81"/>
+                        <path d="M 42 90 L 60 105 L 78 90 L 70 88 L 60 94 L 50 88 Z" fill="#FFFFFF"/>
+                        <!-- Pink Heart Brooch/Ribbon -->
+                        <path d="M 57 95 C 57 92, 54 90, 52 92 C 50 94, 52 97, 60 102 C 68 97, 70 94, 68 92 C 66 90, 63 92, 63 95 Z" fill="#EC4899"/>
+                    </svg>
+                </div>
+                <!-- Maid Status Badge -->
+                <span class="absolute -bottom-1 -right-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white shadow">
+                    메이드 띠띠 ♡
+                </span>
+            </div>
+
+            <!-- Speech Bubble -->
+            <div class="flex-1 w-full">
+                <div class="bg-white border-2 border-purple-300 rounded-2xl p-3.5 sm:p-4 relative speech-bubble shadow-sm">
+                    <p id="maidDialogue" class="text-sm sm:text-base text-purple-950 font-semibold min-h-[48px] flex items-center">
+                        "어서오세요 주인님! ♡ 온라인 메이드카페 띠띠입니다! 신비로운 행운의 종이를 뜯어주세요!"
+                    </p>
+                </div>
+                <!-- Sub Info / Controls -->
+                <div class="flex justify-between items-center mt-2.5 px-1 text-xs text-purple-300 font-bold">
+                    <span>남은 뽑기: <strong id="remainingCount" class="text-pink-400 text-sm">70</strong> / 70개</span>
+                    <button onclick="openAdminModal()" class="hover:text-purple-200 underline flex items-center gap-1 text-purple-200">
+                        <i class="fa-solid fa-lock text-xs"></i> 관리자 판 리셋
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Prize Info Board -->
+        <section class="bg-purple-950/80 backdrop-blur-md rounded-3xl p-3.5 sm:p-4 border-2 border-purple-500/50 shadow-xl">
+            <h2 class="title-font text-center text-purple-100 text-lg sm:text-xl mb-3 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-crown text-purple-400"></i> 메이드카페 띠띠 상품라인업 <i class="fa-solid fa-crown text-purple-400"></i>
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs sm:text-sm text-center">
+                <div class="bg-purple-900/60 p-2.5 rounded-2xl border border-purple-400/40 text-purple-100 shadow-sm">
+                    <span class="block font-bold text-pink-400 title-font text-base">🥇 1등 (1개)</span>
+                    <span class="font-bold">📸 체키2장+손편지</span>
+                </div>
+                <div class="bg-purple-900/60 p-2.5 rounded-2xl border border-purple-400/40 text-purple-100 shadow-sm">
+                    <span class="block font-bold text-purple-300 title-font text-base">🥈 2등 (3개)</span>
+                    <span class="font-bold">📞 전화 30분</span>
+                </div>
+                <div class="bg-purple-900/60 p-2.5 rounded-2xl border border-purple-400/40 text-purple-100 shadow-sm">
+                    <span class="block font-bold text-indigo-300 title-font text-base">🥉 3등 (6개)</span>
+                    <span class="font-bold">📱 전화 10분</span>
+                </div>
+                <div class="bg-purple-900/60 p-2.5 rounded-2xl border border-purple-400/40 text-purple-100 shadow-sm">
+                    <span class="block font-bold text-blue-300 title-font text-base">4등 (15개)</span>
+                    <span class="font-bold">🖼️ 샤메 1장</span>
+                </div>
+                <div class="bg-purple-900/60 p-2.5 rounded-2xl border border-purple-400/40 text-purple-100 shadow-sm col-span-2 sm:col-span-1">
+                    <span class="block font-bold text-cyan-300 title-font text-base">5등 (45개)</span>
+                    <span class="font-bold">🎙️ 보이스메시지</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Classic Drawing Board -->
+        <section class="bg-gradient-to-b from-purple-900/90 to-indigo-950/90 p-3.5 sm:p-5 rounded-3xl border-4 border-purple-400/30 shadow-2xl backdrop-blur-lg">
+            <div id="boardGrid" class="board-grid min-h-[300px]">
+                <!-- Dynamic Pull Tickets will be inserted here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-6 text-center text-xs text-purple-300/80 font-light">
+        <p>♡ Online Maid Cafe Diddi (@maiddiddi) ♡</p>
+        <p class="text-[10px] text-purple-400/60 mt-1">온라인 메이드카페 띠띠 전용 추억의 문방구 종이 뽑기 시스템</p>
+    </footer>
+
+    <!-- Result Modal -->
+    <div id="resultModal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center border-4 border-purple-400 shadow-2xl transform scale-90 transition-transform duration-300" id="modalCard">
+            <div class="text-6xl mb-3" id="modalEmoji">🎁</div>
+            <span id="modalRankBadge" class="inline-block px-3.5 py-1 rounded-full text-xs font-bold text-white bg-purple-600 mb-2">
+                1등 당첨!
+            </span>
+            <h3 id="modalPrizeName" class="title-font text-2xl text-purple-950 mb-2">
+                선물 이름
+            </h3>
+            <p id="modalDescription" class="text-sm text-purple-800 mb-5 bg-purple-50 p-3.5 rounded-2xl border border-purple-200">
+                메이드의 특별 축하 메시지
+            </p>
+            <button onclick="closeModal()" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all title-font text-lg">
+                확인 (주인님 축하해요! ♡)
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirm Dialog Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-3xl p-5 max-w-xs w-full text-center border-2 border-purple-400">
+            <h4 class="title-font text-lg text-purple-900 mb-2">🔒 관리자 인증</h4>
+            <p class="text-xs text-gray-600 mb-3" id="adminModalSubtext">새 뽑기판으로 리셋하려면 비밀번호를 입력해주세요.</p>
+            
+            <input type="password" id="adminPasswordInput" placeholder="비밀번호 입력" class="w-full px-3 py-2 border-2 border-purple-300 rounded-xl mb-3 text-center text-purple-900 focus:outline-none focus:border-purple-600 font-bold text-sm" onkeyup="if(event.key==='Enter') verifyAdminAndReset()">
+            
+            <p id="adminErrorMsg" class="text-xs text-rose-500 font-bold mb-3 hidden">비밀번호가 올바르지 않습니다!</p>
+            
+            <div class="flex gap-2">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-bold">취소</button>
+                <button onclick="verifyAdminAndReset()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-sm font-bold title-font">확인</button>
+            </div>
+            <div class="mt-3">
+                <button onclick="changeAdminPasswordPrompt()" class="text-[11px] text-purple-600 underline">비밀번호 변경하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        // --- Game Data Definition ---
+        const TOTAL_TICKETS = 70;
+        const DEFAULT_ADMIN_PASS = "0530"; // 기본 관리자 비밀번호
+
+        const PRIZE_CONFIG = [
+            { rank: 1, count: 1, name: "체키 2장 + 손편지 📸💌", emoji: "📸", desc: "주인님만을 위한 세상에 하나뿐인 체키 2장과 진심 어린 손편지!", badgeBg: "bg-pink-600" },
+            { rank: 2, count: 3, name: "전화 30분 📞", emoji: "📞", desc: "띠띠와 달콤하고 재미있는 30분간의 수다 타임!", badgeBg: "bg-purple-600" },
+            { rank: 3, count: 6, name: "전화 10분 📱", emoji: "📱", desc: "두근두근 10분 동안의 띠띠와의 목소리 데이트!", badgeBg: "bg-indigo-600" },
+            { rank: 4, count: 15, name: "샤메 1장 🖼️", emoji: "🖼️", desc: "메이드 띠띠의 소중한 귀여운 샤메 1장 선물!", badgeBg: "bg-blue-600" },
+            { rank: 5, count: 45, name: "보이스메시지 🎙️", emoji: "🎙️", desc: "주인님을 위해 녹음한 달콤한 모에모에 보이스!", badgeBg: "bg-cyan-600" }
+        ];
+
+        const MAID_DIALOGUES = {
+            start: [
+                "어서오세요 주인님! ♡ 온라인 메이드카페 띠띠에 오신 걸 환영해요!",
+                "주인님, 어떤 뽑기 종이를 뜯어볼까요? (1회 5,000원)",
+                "오늘의 운세는~? 모에모에 큥! 신비로운 행운을 뽑아주세요!"
+            ],
+            pull: [
+                "두근두근! 과연 어떤 선물이 들어있을까요~?",
+                "주인님이 선택하신 종이... 짠!!",
+                "띠띠의 주문을 받아라~! 얍!"
+            ],
+            rank1: "대... 대박!! 1등 체키 2장+손편지 당첨이에요 주인님!! 📸💌 세상에 축하드려요!! ♡♡",
+            rank2: "우와아! 2등 전화 30분 당첨이에요! 📞 띠띠랑 오랫동안 이야기해요~!",
+            rank3: "축하드려요 주인님! 3등 전화 10분 당첨! 📱 신나게 이야기 나눠요!",
+            rank4: "4등 당첨! 🖼️ 메이드의 소중한 샤메 1장을 선물로 드려요!",
+            rank5: "5등 보이스 메시지 당첨! 🎙️ 주인님을 향한 달콤한 음성을 기대해주세요!"
+        };
+
+        // State Variables
+        let boardTickets = [];
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        // --- Audio Synthesizer ---
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'paper') {
+                const bufferSize = audioCtx.sampleRate * 0.15;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(1200, now);
+                filter.Q.setValueAtTime(3, now);
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                noise.start(now);
+            } else if (type === 'win') {
+                const notes = [587.33, 739.99, 880.00, 1174.66];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+                    gain.gain.setValueAtTime(0, now + idx * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.35);
+                });
+            } else if (type === 'grand') {
+                const notes = [587.33, 739.99, 880.00, 1046.50, 1174.66, 1479.98];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+
+                    gain.gain.setValueAtTime(0.25, now + idx * 0.07);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.4);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.07);
+                    osc.stop(now + idx * 0.07 + 0.45);
+                });
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            const text = document.getElementById('soundText');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+                text.innerText = '효과음 On';
+                initAudio();
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark';
+                text.innerText = '음소거';
+            }
+        }
+
+        // --- Core Game Functions ---
+        function initGame() {
+            const savedBoard = localStorage.getItem('diddi_purple_board_tickets');
+
+            if (savedBoard) {
+                boardTickets = JSON.parse(savedBoard);
+            } else {
+                generateNewBoard();
+            }
+
+            renderBoard();
+            updateRemainingCount();
+            setRandomDialogue('start');
+        }
+
+        function generateNewBoard() {
+            let pool = [];
+            PRIZE_CONFIG.forEach(prize => {
+                for (let i = 0; i < prize.count; i++) {
+                    pool.push({
+                        rank: prize.rank,
+                        name: prize.name,
+                        emoji: prize.emoji,
+                        desc: prize.desc,
+                        badgeBg: prize.badgeBg
+                    });
+                }
+            });
+
+            // Fisher-Yates Shuffle
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+
+            boardTickets = pool.map((item, index) => ({
+                id: index + 1,
+                prize: item,
+                isOpened: false
+            }));
+
+            saveState();
+        }
+
+        function saveState() {
+            localStorage.setItem('diddi_purple_board_tickets', JSON.stringify(boardTickets));
+        }
+
+        function renderBoard() {
+            const grid = document.getElementById('boardGrid');
+            grid.innerHTML = '';
+
+            boardTickets.forEach((ticket) => {
+                const ticketEl = document.createElement('div');
+                ticketEl.className = `pull-ticket h-16 sm:h-20 ${ticket.isOpened ? 'ticket-opened pointer-events-none' : ''}`;
+                
+                ticketEl.innerHTML = `
+                    <div class="ticket-inner" onclick="pullTicket(${ticket.id})">
+                        <div class="ticket-front font-bold title-font text-lg sm:text-xl">
+                            ${ticket.id}
+                        </div>
+                        <div class="ticket-back font-bold text-xs sm:text-sm text-center p-1 flex flex-col items-center justify-center">
+                            <span class="text-base sm:text-lg">${ticket.prize.emoji}</span>
+                            <span class="text-[10px] sm:text-xs text-purple-700 font-extrabold">${ticket.prize.rank}등</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(ticketEl);
+            });
+        }
+
+        function pullTicket(id) {
+            const ticket = boardTickets.find(t => t.id === id);
+            if (!ticket || ticket.isOpened) return;
+
+            playSound('paper');
+            ticket.isOpened = true;
+
+            const gridContainer = document.getElementById('boardGrid');
+            const targetEl = gridContainer.children[id - 1];
+            if (targetEl) {
+                targetEl.classList.add('ticket-opened', 'pointer-events-none');
+            }
+
+            setDialogue(MAID_DIALOGUES.pull[Math.floor(Math.random() * MAID_DIALOGUES.pull.length)]);
+
+            saveState();
+            updateRemainingCount();
+
+            setTimeout(() => {
+                showResultModal(ticket.prize);
+            }, 600);
+        }
+
+        function showResultModal(prize) {
+            const modal = document.getElementById('resultModal');
+            const modalCard = document.getElementById('modalCard');
+
+            document.getElementById('modalEmoji').innerText = prize.emoji;
+            document.getElementById('modalPrizeName').innerText = prize.name;
+            document.getElementById('modalDescription').innerText = prize.desc;
+            
+            const badge = document.getElementById('modalRankBadge');
+            badge.innerText = `${prize.rank}등 당첨!`;
+            badge.className = `inline-block px-3.5 py-1 rounded-full text-xs font-bold text-white mb-2 ${prize.badgeBg}`;
+
+            if (prize.rank === 1) {
+                setDialogue(MAID_DIALOGUES.rank1);
+                playSound('grand');
+                triggerConfetti(true);
+            } else if (prize.rank === 2) {
+                setDialogue(MAID_DIALOGUES.rank2);
+                playSound('win');
+                triggerConfetti(false);
+            } else if (prize.rank === 3) {
+                setDialogue(MAID_DIALOGUES.rank3);
+                playSound('win');
+            } else if (prize.rank === 4) {
+                setDialogue(MAID_DIALOGUES.rank4);
+                playSound('paper');
+            } else {
+                setDialogue(MAID_DIALOGUES.rank5);
+                playSound('paper');
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalCard.classList.remove('scale-90');
+                modalCard.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('resultModal');
+            const modalCard = document.getElementById('modalCard');
+
+            modal.classList.add('opacity-0');
+            modalCard.classList.remove('scale-100');
+            modalCard.classList.add('scale-90');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function triggerConfetti(isGrand) {
+            if (typeof confetti === 'function') {
+                if (isGrand) {
+                    confetti({
+                        particleCount: 120,
+                        spread: 100,
+                        origin: { y: 0.6 },
+                        colors: ['#A78BFA', '#EC4899', '#FFFFFF', '#FBBF24']
+                    });
+                } else {
+                    confetti({
+                        particleCount: 50,
+                        spread: 60,
+                        origin: { y: 0.7 },
+                        colors: ['#C084FC', '#F472B6', '#FFFFFF']
+                    });
+                }
+            }
+        }
+
+        function updateRemainingCount() {
+            const count = boardTickets.filter(t => !t.isOpened).length;
+            document.getElementById('remainingCount').innerText = count;
+        }
+
+        function setDialogue(text) {
+            document.getElementById('maidDialogue').innerText = `"${text}"`;
+        }
+
+        function setRandomDialogue(category) {
+            const list = MAID_DIALOGUES[category];
+            if (list) {
+                const text = list[Math.floor(Math.random() * list.length)];
+                setDialogue(text);
+            }
+        }
+
+        // --- Admin & Reset Functions ---
+        function getAdminPassword() {
+            return localStorage.getItem('diddi_admin_password') || DEFAULT_ADMIN_PASS;
+        }
+
+        function openAdminModal() {
+            const modal = document.getElementById('confirmModal');
+            const passwordInput = document.getElementById('adminPasswordInput');
+            const errorMsg = document.getElementById('adminErrorMsg');
+            
+            passwordInput.value = '';
+            errorMsg.classList.add('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => passwordInput.focus(), 100);
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        function verifyAdminAndReset() {
+            const inputPass = document.getElementById('adminPasswordInput').value;
+            const currentPass = getAdminPassword();
+            const errorMsg = document.getElementById('adminErrorMsg');
+
+            if (inputPass === currentPass) {
+                closeConfirmModal();
+                generateNewBoard();
+                renderBoard();
+                updateRemainingCount();
+                setRandomDialogue('start');
+            } else {
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function changeAdminPasswordPrompt() {
+            const currentPass = getAdminPassword();
+            const inputCurrent = prompt("현재 비밀번호를 입력해주세요:");
+            if (inputCurrent === null) return;
+            
+            if (inputCurrent !== currentPass) {
+                alert("현재 비밀번호가 일치하지 않습니다.");
+                return;
+            }
+
+            const newPass = prompt("새로운 관리자 비밀번호를 입력해주세요:");
+            if (newPass && newPass.trim().length > 0) {
+                localStorage.setItem('diddi_admin_password', newPass.trim());
+                alert("비밀번호가 성공적으로 변경되었습니다!");
+                closeConfirmModal();
+            } else {
+                alert("유효한 비밀번호를 입력해주세요.");
+            }
+        }
+
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>
